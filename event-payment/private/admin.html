@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Submissions - Admin</title>
+<link rel="icon" href="icon.png" type="image/png">
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 30px 16px;
+    max-width: 800px;
+    margin: auto;
+    background: #f4f4f7;
+    color: #333;
+  }
+  h2 { text-align: center; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+  }
+  th { background: #8e2de2; color: white; }
+  tr:hover { background: #faf5ff; }
+  .empty { text-align: center; color: #888; padding: 30px; }
+  button {
+    display: block; margin: 0 auto 20px auto; padding: 8px 16px;
+    border: none; border-radius: 8px; background: #8e2de2; color: white;
+    cursor: pointer; font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<h2>Guest Submissions</h2>
+<button onclick="loadSubmissions()">Refresh</button>
+<div id="content">Loading...</div>
+
+<script>
+  async function loadSubmissions() {
+    const content = document.getElementById('content');
+    content.textContent = 'Loading...';
+    try {
+      const res = await fetch('/api/submissions');
+      const data = await res.json();
+      const subs = data.submissions || [];
+      if (subs.length === 0) {
+        content.innerHTML = '<div class="empty">No submissions yet.</div>';
+        return;
+      }
+      const rows = subs.map(s => `
+        <tr>
+          <td>${new Date(s.createdAt).toLocaleString()}</td>
+          <td>${s.name}</td>
+          <td>${s.relation}</td>
+          <td>₹${s.amount}</td>
+        </tr>
+      `).join('');
+      content.innerHTML = `
+        <table>
+          <thead><tr><th>Time</th><th>Name</th><th>Relation</th><th>Amount</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    } catch (err) {
+      content.innerHTML = '<div class="empty">Failed to load submissions.</div>';
+    }
+  }
+  loadSubmissions();
+</script>
+</body>
+</html>

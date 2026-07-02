@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Event Payment</title>
+<link rel="icon" href="icon.png" type="image/png">
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 40px 20px;
+    max-width: 450px;
+    margin: auto;
+    min-height: 100vh;
+    background: url('https://media.istockphoto.com/id/1482984598/video/jolly-wedding-pack_background_01.jpg?s=640x640&k=20&c=vkJMKEemZIXy3zR1NaqAkX7QvOdTpcLFYw1RwO9aGPY=') no-repeat center center fixed;
+    background-size: cover;
+    color: #333;
+    box-sizing: border-box;
+  }
+  .container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+    margin-top: 30px;
+  }
+  h2 { text-align: center; color: #222; }
+  label { font-weight: bold; margin-top: 12px; display: block; }
+  input {
+    width: 100%; padding: 12px; margin-top: 6px; margin-bottom: 14px;
+    border: none; border-radius: 10px; font-size: 15px;
+    background: #f0f0f0; box-shadow: inset 2px 2px 5px #ccc, inset -2px -2px 5px #fff;
+    box-sizing: border-box;
+  }
+  button {
+    width: 100%; padding: 12px; font-size: 16px; font-weight: bold;
+    color: white; background: linear-gradient(135deg, #8e2de2, #ff6ec4);
+    border: none; border-radius: 12px; cursor: pointer;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s ease;
+  }
+  button:hover { transform: scale(1.05); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .error {
+    color: #b00020; font-size: 14px; margin-top: -8px; margin-bottom: 10px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Event Guest Payment</h2>
+  <label for="guestName">Guest Name:</label>
+  <input type="text" id="guestName" placeholder="Enter your name" />
+  <label for="relation">Type of Relation:</label>
+  <input type="text" id="relation" placeholder="e.g. Friend, Family, Colleague" />
+  <label for="amount">Amount to Pay (INR):</label>
+  <input type="number" id="amount" placeholder="Enter amount" min="1" />
+  <div class="error" id="errorMsg"></div>
+  <button id="submitBtn" onclick="goToQRPage()">Generate Payment QR Code</button>
+</div>
+
+<script>
+  // Replace with your real UPI ID before going live
+  const upiId = "naveenkumar2408@axl";
+
+  async function goToQRPage() {
+    const errorEl = document.getElementById('errorMsg');
+    const btn = document.getElementById('submitBtn');
+    errorEl.style.display = 'none';
+
+    const name = document.getElementById('guestName').value.trim();
+    const relation = document.getElementById('relation').value.trim();
+    const amount = document.getElementById('amount').value.trim();
+
+    if (!name || !amount) {
+      errorEl.textContent = 'Please enter both name and amount';
+      errorEl.style.display = 'block';
+      return;
+    }
+    if (Number(amount) <= 0) {
+      errorEl.textContent = 'Amount must be greater than 0';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    try {
+      // Log this submission to the backend
+      await fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, relation, amount }),
+      });
+    } catch (err) {
+      // If the backend is briefly unavailable, don't block the guest's payment flow
+      console.error('Could not save submission:', err);
+    }
+
+    const transactionNote = `Event Payment (${relation || "Guest"})`;
+    const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(transactionNote)}`;
+
+    const url = `qrpage.html?name=${encodeURIComponent(name)}&relation=${encodeURIComponent(relation)}&amount=${encodeURIComponent(amount)}&link=${encodeURIComponent(upiLink)}`;
+    window.location.href = url;
+  }
+</script>
+</body>
+</html>

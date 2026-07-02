@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scan to Pay</title>
+<link rel="icon" href="icon.png" type="image/png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 40px 20px;
+    max-width: 450px;
+    margin: auto;
+    min-height: 100vh;
+    background: url('https://media.istockphoto.com/id/1482984598/video/jolly-wedding-pack_background_01.jpg?s=640x640&k=20&c=vkJMKEemZIXy3zR1NaqAkX7QvOdTpcLFYw1RwO9aGPY=') no-repeat center center fixed;
+    background-size: cover;
+    color: #333;
+    box-sizing: border-box;
+  }
+  .container {
+    background: rgba(255, 255, 255, 0.92);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+    margin-top: 30px;
+    text-align: center;
+  }
+  h2 { color: #222; margin-top: 0; }
+  #qrcode {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  .details {
+    text-align: left;
+    background: #f7f7f7;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 16px 0;
+    font-size: 15px;
+  }
+  .details div { margin: 4px 0; }
+  .amount { font-size: 22px; font-weight: bold; color: #8e2de2; }
+  a.upi-btn, button.back-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(135deg, #8e2de2, #ff6ec4);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.3);
+    margin-top: 10px;
+    box-sizing: border-box;
+  }
+  button.back-btn {
+    background: #e0e0e0;
+    color: #333;
+    box-shadow: none;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Scan to Pay</h2>
+  <div class="details" id="details"></div>
+  <div id="qrcode"></div>
+  <a href="#" id="upiBtn" class="upi-btn">Open in UPI App</a>
+  <button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get('name') || '';
+  const relation = params.get('relation') || '';
+  const amount = params.get('amount') || '';
+  const link = params.get('link') || '';
+
+  if (!link) {
+    document.getElementById('details').textContent = 'Missing payment details. Please go back and fill the form again.';
+  } else {
+    document.getElementById('details').innerHTML = `
+      <div><strong>Name:</strong> ${name}</div>
+      <div><strong>Relation:</strong> ${relation || 'Guest'}</div>
+      <div><strong>Amount:</strong> <span class="amount">₹${amount}</span></div>
+    `;
+
+    new QRCode(document.getElementById('qrcode'), {
+      text: link,
+      width: 220,
+      height: 220,
+      colorDark: '#222',
+      colorLight: '#ffffff',
+    });
+
+    document.getElementById('upiBtn').href = link;
+  }
+</script>
+</body>
+</html>
