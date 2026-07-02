@@ -30,8 +30,15 @@ function requireAdminAuth(req, res, next) {
   return res.status(401).send('Invalid credentials');
 }
 
-// --- Database setup (pure JS, no native compile needed) ---
-const dbFile = path.join(__dirname, 'data', 'db.json');
+// --- Database setup ---
+// Ensure data/ and db.json exist before lowdb tries to read them
+import fs from 'fs';
+const dataDir = path.join(__dirname, 'data');
+const dbFile = path.join(dataDir, 'db.json');
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+if (!fs.existsSync(dbFile) || fs.readFileSync(dbFile, 'utf-8').trim() === '') {
+  fs.writeFileSync(dbFile, JSON.stringify({ submissions: [] }));
+}
 const defaultData = { submissions: [] };
 const db = await JSONFilePreset(dbFile, defaultData);
 
